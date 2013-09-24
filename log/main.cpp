@@ -17,6 +17,6 @@ int main( int argc, const char* argv[] ) {
 	MyLog.add_stream( &std::cout );
 	MyLog.set_severity( 2 );
 		
-	MyLog( 2 ) << "Hello, World!" << std::endl;
+	MyLog( 3 ) << "Hello, World!" << std::endl;
 	
 }

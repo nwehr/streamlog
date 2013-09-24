@@ -2,8 +2,7 @@
 #define _log_log_h
 
 //
-//		Copyright 2013 EvriChart. All Rights Reserved.
-// 		Written by Nathan Wehr <nathanw@evrichart.com>
+//		Copyright 2013 Nathan Wehr. All Rights Reserved.
 //
 //		Redistribution and use in source and binary forms, with or without
 //		modification, are permitted provided that the following conditions are met:
@@ -32,27 +31,29 @@
 //
 
 // C++
-#include <vector>
-
+#include <forward_list>
 #include <ostream>
-#include <sstream>
 
 namespace log {
 	///////////////////////////////////////////////////////////////////////////////
-	// basic_log : std::ostream
+	// basic_log
 	///////////////////////////////////////////////////////////////////////////////
-	class basic_log : public std::ostream {
+	class basic_log {
+		basic_log( const basic_log& );
+		basic_log& operator=( const basic_log& );
+		
 	public:
 		basic_log();
-		~basic_log();
+		virtual ~basic_log();
 		
 		bool streams_available();
 		
-		void add_stream( std::ostream* i_stream );
-		std::vector<std::ostream*>& streams();
+		void add_stream( std::ostream* );
+		std::forward_list<std::ostream*>& streams();
 		
 		basic_log& log();
 		
+	protected:
 		template<class T>
 		basic_log& operator<<( T );
 		
@@ -77,17 +78,20 @@ namespace log {
 		
 	protected:
 		bool m_streams_available;
-		std::vector<std::ostream*> m_streams;
+		std::forward_list<std::ostream*> m_streams;
 		
 	};
 	
 	///////////////////////////////////////////////////////////////////////////////
-	// severity_log : basic_log : std::ostream
+	// severity_log : basic_log
 	///////////////////////////////////////////////////////////////////////////////
 	class severity_log : public basic_log {
+		severity_log( const severity_log& );
+		severity_log& operator=( const severity_log& );
+		
 	public:
 		severity_log();
-		~severity_log();
+		virtual ~severity_log();
 		
 		void set_severity( int );
 		
@@ -102,9 +106,9 @@ namespace log {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// basic_log non-member overloads
+// basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
-template <class T>
+template<class T>
 log::basic_log& operator<<( log::basic_log&, T );
 
 log::basic_log& operator<<( log::basic_log&, char );
@@ -119,12 +123,11 @@ log::basic_log& operator<<( log::basic_log&, const std::string& );
 
 #if defined( LOG_IMPL )
 ///////////////////////////////////////////////////////////////////////////////
-// basic_log : std::ostream
+// basic_log
 ///////////////////////////////////////////////////////////////////////////////
 log::basic_log::basic_log()
-: std::ostream( new std::stringbuf( ios_base::out ) )
-, m_streams_available( true )
-, m_streams( std::vector<std::ostream*>() )
+: m_streams_available( true )
+, m_streams( std::forward_list<std::ostream*>() )
 {}
 
 log::basic_log::~basic_log() {}
@@ -134,10 +137,10 @@ bool log::basic_log::streams_available() {
 }
 
 void log::basic_log::add_stream( std::ostream* i_stream ) {
-	m_streams.push_back( i_stream );
+	m_streams.push_front( i_stream );
 }
 
-std::vector<std::ostream*>& log::basic_log::streams() {
+std::forward_list<std::ostream*>& log::basic_log::streams() {
 	return m_streams;
 }
 
@@ -149,8 +152,8 @@ log::basic_log& log::basic_log::log() {
 template<class T>
 log::basic_log& log::basic_log::operator<<( T i_val ) {
 	if( m_streams_available ) {
-		for( unsigned int i = 0; i < m_streams.size(); ++i ) {
-			m_streams[i]->operator<<( i_val );
+		for( std::forward_list<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+			(*it)->operator<<( i_val );
 		}
 		
 	}
@@ -162,10 +165,10 @@ log::basic_log& log::basic_log::operator<<( T i_val ) {
 template<class T>
 log::basic_log& log::basic_log::operator<<( T (*f)(T) ) {
 	if( m_streams_available ) {
-		for( unsigned int i = 0; i < m_streams.size(); ++i ) {
-			f( *m_streams[i] );
+		for( std::forward_list<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+			f( *(*it) );
 		}
-		
+				
 	}
 	
 	return *this;
@@ -229,11 +232,10 @@ log::basic_log& log::basic_log::operator<<( std::ios_base& (*f)(std::ios_base&) 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// severity_log : basic_log : std::ostream
+// severity_log : basic_log
 ///////////////////////////////////////////////////////////////////////////////
 log::severity_log::severity_log()
-: basic_log()
-, m_severity( 0 )
+: m_severity( 0 )
 {}
 
 log::severity_log::~severity_log() {}
@@ -253,13 +255,13 @@ log::severity_log& log::severity_log::operator()( int i_sev ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// basic_log non-member overloads
+// basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
-template <class T>
+template<class T>
 log::basic_log& operator<<( log::basic_log& i_log, T i_val ) {
 	if( i_log.streams_available() ) {
-		for( unsigned int i = 0; i < i_log.streams().size(); ++i ) {
-			operator<<( *(i_log.streams()[i]), i_val );
+		for( std::forward_list<std::ostream*>::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
+			operator<<( *(*it), i_val );
 		}
 		
 	}
