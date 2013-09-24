@@ -31,10 +31,10 @@
 //
 
 // C++
-#include <forward_list>
+#include <deque>
 #include <ostream>
 
-namespace log {
+namespace streamlog {
 	///////////////////////////////////////////////////////////////////////////////
 	// basic_log
 	///////////////////////////////////////////////////////////////////////////////
@@ -49,9 +49,7 @@ namespace log {
 		bool streams_available();
 		
 		void add_stream( std::ostream* );
-		std::forward_list<std::ostream*>& streams();
-		
-		basic_log& log();
+		std::deque<std::ostream*>& streams();
 		
 	protected:
 		template<class T>
@@ -78,7 +76,7 @@ namespace log {
 		
 	protected:
 		bool m_streams_available;
-		std::forward_list<std::ostream*> m_streams;
+		std::deque<std::ostream*> m_streams;
 		
 	};
 	
@@ -95,7 +93,6 @@ namespace log {
 		
 		void set_severity( int );
 		
-		severity_log& log( int );
 		severity_log& operator()( int );
 		
 	private:
@@ -109,50 +106,45 @@ namespace log {
 // basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
 template<class T>
-log::basic_log& operator<<( log::basic_log&, T );
+streamlog::basic_log& operator<<( streamlog::basic_log&, T );
 
-log::basic_log& operator<<( log::basic_log&, char );
-log::basic_log& operator<<( log::basic_log&, signed char );
-log::basic_log& operator<<( log::basic_log&, unsigned char );
+streamlog::basic_log& operator<<( streamlog::basic_log&, char );
+streamlog::basic_log& operator<<( streamlog::basic_log&, signed char );
+streamlog::basic_log& operator<<( streamlog::basic_log&, unsigned char );
 
-log::basic_log& operator<<( log::basic_log&, const char* );
-log::basic_log& operator<<( log::basic_log&, const signed char* );
-log::basic_log& operator<<( log::basic_log&, const unsigned char* );
+streamlog::basic_log& operator<<( streamlog::basic_log&, const char* );
+streamlog::basic_log& operator<<( streamlog::basic_log&, const signed char* );
+streamlog::basic_log& operator<<( streamlog::basic_log&, const unsigned char* );
 
-log::basic_log& operator<<( log::basic_log&, const std::string& );
+streamlog::basic_log& operator<<( streamlog::basic_log&, const std::string& );
 
-#if defined( LOG_IMPL )
+#if defined( STREAMLOG_IMPL )
 ///////////////////////////////////////////////////////////////////////////////
 // basic_log
 ///////////////////////////////////////////////////////////////////////////////
-log::basic_log::basic_log()
+streamlog::basic_log::basic_log()
 : m_streams_available( true )
-, m_streams( std::forward_list<std::ostream*>() )
+, m_streams( std::deque<std::ostream*>() )
 {}
 
-log::basic_log::~basic_log() {}
+streamlog::basic_log::~basic_log() {}
 
-bool log::basic_log::streams_available() {
+bool streamlog::basic_log::streams_available() {
 	return m_streams_available;
 }
 
-void log::basic_log::add_stream( std::ostream* i_stream ) {
-	m_streams.push_front( i_stream );
+void streamlog::basic_log::add_stream( std::ostream* i_stream ) {
+	m_streams.push_back( i_stream );
 }
 
-std::forward_list<std::ostream*>& log::basic_log::streams() {
+std::deque<std::ostream*>& streamlog::basic_log::streams() {
 	return m_streams;
 }
 
-log::basic_log& log::basic_log::log() {
-	m_streams_available = true;
-	return *this;
-}
-
 template<class T>
-log::basic_log& log::basic_log::operator<<( T i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( T i_val ) {
 	if( m_streams_available ) {
-		for( std::forward_list<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+		for( std::deque<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
 			(*it)->operator<<( i_val );
 		}
 		
@@ -163,9 +155,9 @@ log::basic_log& log::basic_log::operator<<( T i_val ) {
 }
 
 template<class T>
-log::basic_log& log::basic_log::operator<<( T (*f)(T) ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( T (*f)(T) ) {
 	if( m_streams_available ) {
-		for( std::forward_list<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+		for( std::deque<std::ostream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
 			f( *(*it) );
 		}
 				
@@ -175,81 +167,76 @@ log::basic_log& log::basic_log::operator<<( T (*f)(T) ) {
 	
 }
 
-log::basic_log& log::basic_log::operator<<( bool i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( bool i_val ) {
 	return operator<<<bool>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( short i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( short i_val ) {
 	return operator<<<short>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( unsigned short i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( unsigned short i_val ) {
 	return operator<<<unsigned short>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( int i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( int i_val ) {
 	return operator<<<int>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( unsigned int i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( unsigned int i_val ) {
 	return operator<<<unsigned int>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( long i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( long i_val ) {
 	return operator<<<long>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( unsigned long i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( unsigned long i_val ) {
 	return operator<<<unsigned long>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( float i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( float i_val ) {
 	return operator<<<float>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( double i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( double i_val ) {
 	return operator<<<double>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( void* i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( void* i_val ) {
 	return operator<<<void*>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( std::streambuf* i_val ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( std::streambuf* i_val ) {
 	return operator<<<std::streambuf*>( i_val );
 }
 
-log::basic_log& log::basic_log::operator<<( std::ostream& (*f)(std::ostream&) ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( std::ostream& (*f)(std::ostream&) ) {
 	return operator<<<std::ostream&>( f );
 }
 
-log::basic_log& log::basic_log::operator<<( std::ios& (*f)(std::ios&) ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( std::ios& (*f)(std::ios&) ) {
 	return operator<<<std::ios&>( f );
 }
 
-log::basic_log& log::basic_log::operator<<( std::ios_base& (*f)(std::ios_base&) ) {
+streamlog::basic_log& streamlog::basic_log::operator<<( std::ios_base& (*f)(std::ios_base&) ) {
 	return operator<<<std::ios_base&>( f );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // severity_log : basic_log
 ///////////////////////////////////////////////////////////////////////////////
-log::severity_log::severity_log()
+streamlog::severity_log::severity_log()
 : m_severity( 0 )
 {}
 
-log::severity_log::~severity_log() {}
+streamlog::severity_log::~severity_log() {}
 
-void log::severity_log::set_severity( int i_sev ) {
+void streamlog::severity_log::set_severity( int i_sev ) {
 	m_severity = i_sev;
 }
 
-log::severity_log& log::severity_log::log( int i_sev ) {
-	m_streams_available = (i_sev >= m_severity ? true : false);
-	return *this;
-}
-
-log::severity_log& log::severity_log::operator()( int i_sev ) {
+streamlog::severity_log& streamlog::severity_log::operator()( int i_sev ) {
 	m_streams_available = (i_sev >= m_severity ? true : false);
 	return *this;
 }
@@ -258,9 +245,9 @@ log::severity_log& log::severity_log::operator()( int i_sev ) {
 // basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
 template<class T>
-log::basic_log& operator<<( log::basic_log& i_log, T i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, T i_val ) {
 	if( i_log.streams_available() ) {
-		for( std::forward_list<std::ostream*>::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
+		for( std::deque<std::ostream*>::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
 			operator<<( *(*it), i_val );
 		}
 		
@@ -270,31 +257,31 @@ log::basic_log& operator<<( log::basic_log& i_log, T i_val ) {
 	
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, char i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, char i_val ) {
 	return operator<<<char>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, signed char i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, signed char i_val ) {
 	return operator<<<signed char>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, unsigned char i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, unsigned char i_val ) {
 	return operator<<<unsigned char>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, const char* i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, const char* i_val ) {
 	return operator<<<const char*>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, const signed char* i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, const signed char* i_val ) {
 	return operator<<<const signed char*>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, const unsigned char* i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, const unsigned char* i_val ) {
 	return operator<<<const unsigned char*>( i_log, i_val );
 }
 
-log::basic_log& operator<<( log::basic_log& i_log, const std::string& i_val ) {
+streamlog::basic_log& operator<<( streamlog::basic_log& i_log, const std::string& i_val ) {
 	return operator<<<const std::string&>( i_log, i_val );
 }
 

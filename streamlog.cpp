@@ -6,5 +6,5 @@
 //  Copyright (c) 2013 Creltek. All rights reserved.
 //
 
-#define LOG_IMPL
-#include <log/log.h>
+#define STREAMLOG_IMPL
+#include <streamlog/streamlog.h>
