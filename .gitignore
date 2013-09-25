@@ -1,6 +1,8 @@
 .bzr
 .bzrignore
 
+debian/
+
 log/
 CMakeFiles/
 
