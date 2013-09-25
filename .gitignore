@@ -1,3 +1,6 @@
+.bzr
+.bzrignore
+
 log/
 CMakeFiles/
 
