@@ -35,7 +35,19 @@
 #include <memory>
 #include <ostream>
 
+#if defined( STREAMLOG_BOOST_PTR )
+#include <boost/smart_ptr.hpp>
+#endif
+
 namespace streamlog {
+	namespace ptr =
+#if defined( STREAMLOG_BOOST_PTR )
+	boost
+#else
+	std
+#endif
+	;
+	
 	///////////////////////////////////////////////////////////////////////////////
 	// null_deleter
 	///////////////////////////////////////////////////////////////////////////////
@@ -56,17 +68,15 @@ namespace streamlog {
 		
 		bool streams_available();
 		
-		void add_stream( const std::shared_ptr<std::ostream>& );
-		std::deque<std::shared_ptr<std::ostream>>& streams();
+		void add_stream( const ptr::shared_ptr<std::ostream>& );
+		std::deque<ptr::shared_ptr<std::ostream> >& streams();
 		
-	protected:
-		template<class argument_type>
+		template<typename argument_type>
 		basic_log& operator<<( argument_type );
 		
-		template<class argument_type>
+		template<typename argument_type>
 		basic_log& operator<<( argument_type (*)(argument_type) );
 		
-	public:
 		basic_log& operator<<( bool );
 		basic_log& operator<<( short );
 		basic_log& operator<<( unsigned short );
@@ -84,7 +94,7 @@ namespace streamlog {
 		
 	protected:
 		bool m_streams_available;
-		std::deque<std::shared_ptr<std::ostream>> m_streams;
+		std::deque<ptr::shared_ptr<std::ostream> > m_streams;
 		
 	};
 	
@@ -113,7 +123,7 @@ namespace streamlog {
 ///////////////////////////////////////////////////////////////////////////////
 // basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
-template<class argument_type>
+template<typename argument_type>
 streamlog::basic_log& operator<<( streamlog::basic_log&, argument_type );
 
 streamlog::basic_log& operator<<( streamlog::basic_log&, char );
@@ -130,7 +140,7 @@ streamlog::basic_log& operator<<( streamlog::basic_log&, const std::string& );
 ///////////////////////////////////////////////////////////////////////////////
 streamlog::basic_log::basic_log()
 : m_streams_available( true )
-, m_streams( std::deque<std::shared_ptr<std::ostream>>() )
+, m_streams( std::deque<streamlog::ptr::shared_ptr<std::ostream> >() )
 {}
 
 streamlog::basic_log::~basic_log() {}
@@ -139,18 +149,18 @@ bool streamlog::basic_log::streams_available() {
 	return m_streams_available;
 }
 
-void streamlog::basic_log::add_stream( const std::shared_ptr<std::ostream>& i_stream ) {
+void streamlog::basic_log::add_stream( const streamlog::ptr::shared_ptr<std::ostream>& i_stream ) {
 	m_streams.push_back( i_stream );
 }
 
-std::deque<std::shared_ptr<std::ostream>>& streamlog::basic_log::streams() {
+std::deque<streamlog::ptr::shared_ptr<std::ostream> >& streamlog::basic_log::streams() {
 	return m_streams;
 }
 
-template<class argument_type>
+template<typename argument_type>
 streamlog::basic_log& streamlog::basic_log::operator<<( argument_type i_val ) {
 	if( m_streams_available ) {
-		for( typename std::deque<std::shared_ptr<std::ostream>>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
 			(*it)->operator<<( i_val );
 		}
 		
@@ -160,10 +170,10 @@ streamlog::basic_log& streamlog::basic_log::operator<<( argument_type i_val ) {
 	
 }
 
-template<class argument_type>
+template<typename argument_type>
 streamlog::basic_log& streamlog::basic_log::operator<<( argument_type (*f)(argument_type) ) {
 	if( m_streams_available ) {
-		for( typename std::deque<std::shared_ptr<std::ostream>>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
 			f( *(*it) );
 		}
 				
@@ -250,10 +260,10 @@ streamlog::severity_log& streamlog::severity_log::operator()( int i_sev ) {
 ///////////////////////////////////////////////////////////////////////////////
 // basic_log non-member functions
 ///////////////////////////////////////////////////////////////////////////////
-template<class argument_type>
+template<typename argument_type>
 streamlog::basic_log& operator<<( streamlog::basic_log& i_log, argument_type i_val ) {
 	if( i_log.streams_available() ) {
-		for( typename std::deque<std::shared_ptr<std::ostream>>::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
+		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
 			operator<<( *(*it), i_val );
 		}
 		
@@ -291,5 +301,5 @@ streamlog::basic_log& operator<<( streamlog::basic_log& i_log, const std::string
 	return operator<<<const std::string&>( i_log, i_val );
 }
 
-#endif // defined( LOG_IMPL )
+#endif // defined( LOGSTREAM_IMPL )
 #endif // _log_log_h

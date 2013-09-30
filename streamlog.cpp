@@ -1,10 +1,6 @@
 //
-//  log.cpp
-//  log
-//
-//  Created by Nathan Wehr on 9/23/13.
-//  Copyright (c) 2013 Creltek. All rights reserved.
+//  Copyright 2013 Nathan Wehr. All Rights Reserved.
 //
 
 #define STREAMLOG_IMPL
-#include <streamlog/streamlog.h>
+#include <streamlog.h>
