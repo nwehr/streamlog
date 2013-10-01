@@ -36,7 +36,7 @@
 #include <ostream>
 
 #if defined( STREAMLOG_BOOST_PTR )
-#include <boost/smart_ptr.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #endif
 
 namespace streamlog {

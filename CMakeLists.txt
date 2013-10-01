@@ -2,9 +2,11 @@
 # Project Settings/Requirements
 ##############################################################################
 cmake_minimum_required( VERSION 2.6 )
+
 include_directories( "${PROJECT_SOURCE_DIR}" )
 
-# set( CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs" )
+include_directories( "/usr/include" )
+include_directories( "/usr/local/include" )
 
 ##############################################################################
 # Build - Library
