@@ -4,6 +4,7 @@
 debian/
 
 log/
+build/
 CMakeFiles/
 
 Makefile

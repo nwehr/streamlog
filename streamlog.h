@@ -32,29 +32,10 @@
 
 // C++
 #include <deque>
-#include <memory>
+#include <map>
 #include <ostream>
 
-#if defined( STREAMLOG_BOOST_PTR )
-#include <boost/smart_ptr/shared_ptr.hpp>
-#endif
-
 namespace streamlog {
-	namespace ptr =
-#if defined( STREAMLOG_BOOST_PTR )
-	boost
-#else
-	std
-#endif
-	;
-	
-	///////////////////////////////////////////////////////////////////////////////
-	// null_deleter
-	///////////////////////////////////////////////////////////////////////////////
-	struct null_deleter {
-		void operator()( void const* ) const {}
-	};
-	
 	///////////////////////////////////////////////////////////////////////////////
 	// basic_log
 	///////////////////////////////////////////////////////////////////////////////
@@ -68,8 +49,8 @@ namespace streamlog {
 		
 		bool streams_available();
 		
-		void add_stream( const ptr::shared_ptr<std::ostream>& );
-		std::deque<ptr::shared_ptr<std::ostream> >& streams();
+		void add_stream( std::ostream*, bool i_own = false );
+		std::deque<std::pair<std::ostream*,bool>>& streams();
 		
 		template<typename argument_type>
 		basic_log& operator<<( argument_type );
@@ -94,7 +75,7 @@ namespace streamlog {
 		
 	protected:
 		bool m_streams_available;
-		std::deque<ptr::shared_ptr<std::ostream> > m_streams;
+		std::deque<std::pair<std::ostream*,bool>> m_streams;
 		
 	};
 	
@@ -140,28 +121,37 @@ streamlog::basic_log& operator<<( streamlog::basic_log&, const std::string& );
 ///////////////////////////////////////////////////////////////////////////////
 streamlog::basic_log::basic_log()
 : m_streams_available( true )
-, m_streams( std::deque<streamlog::ptr::shared_ptr<std::ostream> >() )
+, m_streams( std::deque<std::pair<std::ostream*,bool>>() )
 {}
 
-streamlog::basic_log::~basic_log() {}
+streamlog::basic_log::~basic_log() {
+	for( std::deque<std::pair<std::ostream*,bool>>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+		if( (*it).second ) {
+			delete (*it).first;
+		}
+	}
+	
+	m_streams.clear();
+	
+}
 
 bool streamlog::basic_log::streams_available() {
 	return m_streams_available;
 }
 
-void streamlog::basic_log::add_stream( const streamlog::ptr::shared_ptr<std::ostream>& i_stream ) {
-	m_streams.push_back( i_stream );
+void streamlog::basic_log::add_stream( std::ostream* i_stream, bool i_own ) {
+	m_streams.push_back( std::pair<std::ostream*,bool>( i_stream, i_own ) );
 }
 
-std::deque<streamlog::ptr::shared_ptr<std::ostream> >& streamlog::basic_log::streams() {
+std::deque<std::pair<std::ostream*,bool>>& streamlog::basic_log::streams() {
 	return m_streams;
 }
 
 template<typename argument_type>
 streamlog::basic_log& streamlog::basic_log::operator<<( argument_type i_val ) {
 	if( m_streams_available ) {
-		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
-			(*it)->operator<<( i_val );
+		for( std::deque<std::pair<std::ostream*,bool>>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+			(*it).first->operator<<( i_val );
 		}
 		
 	}
@@ -173,8 +163,8 @@ streamlog::basic_log& streamlog::basic_log::operator<<( argument_type i_val ) {
 template<typename argument_type>
 streamlog::basic_log& streamlog::basic_log::operator<<( argument_type (*f)(argument_type) ) {
 	if( m_streams_available ) {
-		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
-			f( *(*it) );
+		for( std::deque<std::pair<std::ostream*,bool>>::iterator it = m_streams.begin(); it != m_streams.end(); ++it ) {
+			f( *(*it).first );
 		}
 				
 	}
@@ -263,8 +253,8 @@ streamlog::severity_log& streamlog::severity_log::operator()( int i_sev ) {
 template<typename argument_type>
 streamlog::basic_log& operator<<( streamlog::basic_log& i_log, argument_type i_val ) {
 	if( i_log.streams_available() ) {
-		for( std::deque<streamlog::ptr::shared_ptr<std::ostream> >::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
-			operator<<( *(*it), i_val );
+		for( std::deque<std::pair<std::ostream*,bool>>::iterator it = i_log.streams().begin(); it != i_log.streams().end(); ++it ) {
+			operator<<( *(*it).first, i_val );
 		}
 		
 	}
