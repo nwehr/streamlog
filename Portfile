@@ -1,0 +1,26 @@
+PortSystem			1.0
+
+# PortGroup				bitbucket 1.0
+# bitbucket.setup			nwehr streamlog 1.0
+# bitbucket.master_sites	https://bitbucket.org/nwehr/streamlog/downloads
+
+PortGroup			cmake 1.0
+
+name				libstreamlog
+version				1.0
+categories			devel
+platforms			darwin
+license				BSD
+
+maintainers			gmail.com:gtolemans
+
+description			Logging library built on top of C++ standard output streams
+long_description	Streamlog is a simple and lightweight library that maintains an array of \
+					user-defined C++ standard output streams. Every time you write to the log, \
+					it automatically writes to all of the added streams.
+
+homepage			https://bitbucket.org/nwehr/streamlog
+master_sites		https://bitbucket.org/nwehr/streamlog/downloads
+
+checksums			rmd160	373f6b9d9afe9371cd3c4446b42466b793fc8481 \
+					sha256	3ff1ef9f04dbddbbe6b40a999150f999680543c3aef8d9f7f288fb9ac9722314
